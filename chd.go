@@ -116,6 +116,32 @@ func (c *CHD) Get(key []byte) []byte {
 	return v
 }
 
+// Get an entry from the hash table.
+func (c *CHD) GetFast(key []byte) []byte {
+	r0 := c.r[0]
+	h := hasher(key) ^ r0
+	i := h % uint64(len(c.indices))
+	ri := c.indices[i]
+	// This can occur if there were unassigned slots in the hash table.
+	if ri >= uint16(len(c.r)) {
+		return nil
+	}
+	r := c.r[ri]
+	ti := (h ^ r) % uint64(len(c.keys))
+	// fmt.Printf("r[0]=%d, h=%d, i=%d, ri=%d, r=%d, ti=%d\n", c.r[0], h, i, ri, r, ti)
+
+	// This line is the major performance hit
+	// It looks pretty innocent, but since keys is byte[][] it is repeatedly copying byte arrays.
+	// I think it's just error checking?
+	// k := c.keys[ti] 
+
+	// if bytes.Compare(k, key) != 0 {
+	// 	return nil
+	// }
+	v := c.values[ti]
+	return v
+}
+
 func (c *CHD) Len() int {
 	return len(c.keys)
 }

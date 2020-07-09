@@ -139,3 +139,17 @@ func BenchmarkCHD(b *testing.B) {
 		h.Get(keys[i%len(keys)])
 	}
 }
+
+func BenchmarkCHDFast(b *testing.B) {
+	keys := [][]byte{}
+	mph := Builder()
+	for _, k := range words {
+		keys = append(keys, k)
+		mph.Add(k, k)
+	}
+	h, _ := mph.Build()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		h.GetFast(keys[i%len(keys)])
+	}
+}
